@@ -20,6 +20,14 @@ The project combines AI-based waste recognition, a web application with a 3D dig
 
 Manual biomedical-waste segregation can expose healthcare workers to hazardous materials and increase the chance of incorrect disposal. NEXMED explores an AI-assisted approach to identifying waste items and recommending a designated segregation category, alongside a concept for mobile and automated handling.
 
+## System Architecture
+
+The diagram below presents NEXMED's **conceptual end-to-end design**—from waste intake and singulation through AI-assisted inspection and classification to mechanical routing into designated bins. It illustrates the proposed machine architecture; the physical robotics system was not built.
+
+![NEXMED conceptual system architecture](docs/images/nexmed-system-architecture.png)
+
+For a more detailed breakdown of the software components and proposed robotics workflow, see [System Architecture](docs/system-architecture.md).
+
 ## How the AI pipeline works
 
 The intended sequential pipeline uses both trained models:
