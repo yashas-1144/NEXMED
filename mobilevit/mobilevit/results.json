@@ -1,0 +1,13 @@
+{
+    "best_validation_accuracy": 0.8388888888888889,
+    "test_loss": 0.5552379608708472,
+    "test_accuracy": 0.8429752066115702,
+    "class_names": [
+        "Cotton_Bandage",
+        "Glove",
+        "IV_Bottle",
+        "Mask",
+        "Pill_Strip",
+        "Syringe"
+    ]
+}

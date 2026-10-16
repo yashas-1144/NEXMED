@@ -1,0 +1,19 @@
+# BioMedAI Backend — Python Dependencies
+#
+# Install with:
+#   pip install -r backend/requirements.txt
+#
+# For GPU support (CUDA 11.8):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# For GPU support (CUDA 12.1):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+Flask>=3.0.0
+flask-cors>=4.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.35.0
+Pillow>=10.0.0
+numpy>=1.24.0
+safetensors>=0.4.0
+python-dotenv>=1.0.0

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and runtime uploads
+*.log
+backend/logs/*
+!backend/logs/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Training artifacts and redundant checkpoints
+yolo/
+best.pt/
+model.safetensors
+train_mobilevit.py
+
+# Local development and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Keep the MobileViT checkpoint required by the application
+!mobilevit/mobilevit/model.safetensors

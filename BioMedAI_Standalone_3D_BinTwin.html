@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Bio Waste Control Center</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#070b14;--panel:#101827;--panel2:#151f31;--line:#26344b;--cyan:#32d6dc;--blue:#4d8dff;--green:#42c98e;--amber:#f5b942;--red:#f05f6e;--muted:#8490a7}
+    *{box-sizing:border-box} body{margin:0;background:#070b14;color:#edf4ff;font-family:"DM Sans",sans-serif;overflow-x:hidden}
+    .shell{width:100%;min-height:calc(100 * min(var(--vh, 1vh), 1vh));background:radial-gradient(circle at 78% -5%,#12334c 0%,transparent 30%),#070b14}
+    .sidebar{background:rgba(5,9,18,.94);border-right:1px solid #1a273b;backdrop-filter:blur(18px)}
+    .glass{background:linear-gradient(135deg,rgba(21,31,49,.86),rgba(13,21,35,.76));border:1px solid rgba(100,130,170,.17);box-shadow:0 16px 38px rgba(0,0,0,.19);backdrop-filter:blur(16px)}
+    .nav-item{position:relative;color:#8793aa;transition:.2s ease}.nav-item:hover{color:#e9fbff;background:#101b2d}.nav-item.active{color:#bfffff;background:linear-gradient(90deg,rgba(32,194,205,.18),rgba(32,194,205,.03));box-shadow:inset 0 0 20px rgba(39,210,219,.06)}.nav-item.active:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;background:#32d6dc;border-radius:0 4px 4px 0;box-shadow:0 0 12px #32d6dc}
+    .view{display:none;animation:enter .35s ease}.view.active{display:block}@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    #robot-3d-showcase{display:none}
+    .card{border-radius:18px}.kpi{transition:transform .22s ease,border-color .22s ease}.kpi:hover{transform:translateY(-4px);border-color:rgba(50,214,220,.45)}
+    .orb{box-shadow:0 0 0 7px rgba(50,214,220,.05),0 0 32px rgba(50,214,220,.18)}.pulse{animation:pulse 2s infinite}@keyframes pulse{50%{opacity:.46;box-shadow:0 0 0 7px rgba(66,201,142,.05),0 0 15px rgba(66,201,142,.32)}}
+    .progress span{display:block;height:100%;border-radius:inherit;transform-origin:left;animation:grow .8s ease both}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .donut{background:conic-gradient(#32d6dc 0 29%,#4d8dff 29% 51%,#42c98e 51% 69%,#f5b942 69% 82%,#7c879b 82% 92%,#f05f6e 92% 100%)}.donut:after{content:"";position:absolute;inset:24px;border-radius:50%;background:#101827}
+    .scan:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,rgba(50,214,220,.24),transparent);height:30%;animation:scan 3s linear infinite}@keyframes scan{from{transform:translateY(-110%)}to{transform:translateY(390%)}}
+    .map-grid{background-image:linear-gradient(rgba(91,124,155,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(91,124,155,.08) 1px,transparent 1px);background-size:28px 28px}
+    .route{stroke-dasharray:8 8;animation:route 2s linear infinite}@keyframes route{to{stroke-dashoffset:-32}}
+    .focusable:focus-visible{outline:2px solid #32d6dc;outline-offset:3px}.tiny{font-family:"Space Mono",monospace}.hidden-panel{display:none}
+    @media(max-width:900px){.sidebar{position:fixed;z-index:30;left:0;top:0;bottom:0;width:260px;transform:translateX(-100%);transition:.25s}.sidebar.open{transform:none}.content{margin-left:0!important}.desktop-only{display:none}}@media(min-width:901px){.sidebar{width:248px;position:fixed;inset:0}.content{margin-left:248px}}@media(max-width:560px){.metrics{grid-template-columns:1fr 1fr!important}.hide-mobile{display:none}}
+  </style>
+  
+  
+ 
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
+</script>
+<style>
+#robot-3d-showcase{position:relative;margin-top:28px;min-height:760px;border-radius:22px;overflow:hidden;border:1px solid rgba(100,130,170,.17);background:radial-gradient(circle at 50% 35%,rgba(20,69,92,.30),transparent 42%),radial-gradient(circle at 50% 100%,rgba(28,92,112,.12),transparent 48%),#050a13;box-shadow:0 24px 70px rgba(0,0,0,.32)}
+#robot-3d-showcase .robot3d-stage{position:absolute;inset:0;width:100%;height:100%}
+#robot-3d-showcase canvas{display:block;width:100%;height:100%;cursor:grab}
+#robot-3d-showcase canvas:active{cursor:grabbing}
+.robot3d-label{position:absolute;left:24px;top:22px;z-index:3;pointer-events:none}
+.robot3d-label .eyebrow{font:700 10px/1 "Space Mono",monospace;letter-spacing:.18em;color:#32d6dc}
+.robot3d-label h3{margin:8px 0 0;font-size:25px;line-height:1.15;letter-spacing:-.02em}
+.robot3d-label p{margin:8px 0 0;color:#8490a7;font-size:12px}
+.robot3d-state{position:absolute;right:22px;top:22px;z-index:3;padding:9px 12px;border:1px solid rgba(50,214,220,.20);border-radius:999px;background:rgba(7,15,26,.70);backdrop-filter:blur(12px);font:700 10px/1 "Space Mono",monospace;letter-spacing:.10em;color:#bfffff;pointer-events:none}
+.robot3d-help{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:3;width:max-content;max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(100,130,170,.18);border-radius:999px;background:rgba(7,15,26,.72);backdrop-filter:blur(12px);color:#aeb9ca;font-size:11px;text-align:center;pointer-events:none}
+.robot3d-reset{position:absolute;right:22px;bottom:22px;z-index:4;border:1px solid rgba(50,214,220,.25);border-radius:10px;background:rgba(12,24,39,.80);color:#bfffff;padding:9px 12px;font-size:11px;font-weight:700;cursor:pointer;backdrop-filter:blur(12px)}
+.robot3d-reset:hover{background:rgba(30,56,75,.92)}
+@media(max-width:700px){#robot-3d-showcase{min-height:620px}.robot3d-label h3{font-size:20px}.robot3d-state{top:auto;right:16px;bottom:68px}.robot3d-help{bottom:18px;font-size:10px}.robot3d-reset{right:16px;bottom:16px}}
+</style>
+
+
+<style>
+.bin-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-end}.bin-eyebrow{font-size:10px;letter-spacing:.2em;color:#67e8f9;font-weight:800}.bin-subtitle{margin-top:8px;color:#718096;font-size:14px}.bin-system-status{font-size:10px;letter-spacing:.12em;color:#94a3b8;border:1px solid rgba(103,232,249,.18);background:rgba(8,20,32,.55);padding:9px 12px;border-radius:999px;white-space:nowrap}.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#42c98e;box-shadow:0 0 12px #42c98e;margin-right:7px}.bin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.bin-card{position:relative;overflow:hidden;border:1px solid rgba(148,163,184,.12);cursor:pointer;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;background:rgba(7,15,27,.72)}.bin-card:hover,.bin-card:focus-visible{transform:translateY(-3px);border-color:rgba(103,232,249,.5);box-shadow:0 0 0 1px rgba(103,232,249,.08),0 18px 55px rgba(0,0,0,.3),0 0 35px rgba(103,232,249,.08);outline:none}.bin-card-top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0}.bin-card-top>div{display:flex;align-items:center;gap:9px}.bin-color{width:9px;height:9px;border-radius:50%;display:inline-block;box-shadow:0 0 14px currentColor}.bin-color.red{color:#ef4444;background:#ef4444}.bin-color.yellow{color:#facc15;background:#facc15}.bin-color.blue{color:#38bdf8;background:#38bdf8}.bin-color.black{color:#cbd5e1;background:#111827;border:1px solid #64748b}.bin-category{font-size:9px;letter-spacing:.14em;color:#64748b}.bin-stage{height:245px;position:relative}.bin-stage canvas{width:100%!important;height:100%!important;display:block}.bin-card-bottom{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;padding:0 18px 18px}.bin-percent{font-size:27px;font-weight:800;display:block;margin-bottom:8px}.bin-progress{height:5px;background:#172235;border-radius:999px;overflow:hidden;width:100%}.bin-progress span{display:block;height:100%;border-radius:inherit;transition:width .5s ease}.bin-status{font-size:9px;letter-spacing:.12em;font-weight:800;padding:7px 9px;border-radius:999px;white-space:nowrap}.bin-status.normal{color:#67e8b0;background:rgba(66,201,142,.1);border:1px solid rgba(66,201,142,.18)}.bin-status.warning{color:#f5c76b;background:rgba(245,185,66,.1);border:1px solid rgba(245,185,66,.22)}.bin-status.critical{color:#fb7185;background:rgba(240,95,110,.1);border:1px solid rgba(240,95,110,.22)}.bin-inspector{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(2,7,15,.78);backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:.25s}.bin-inspector.open{opacity:1;visibility:visible}.bin-inspector-panel{width:min(1180px,96vw);max-height:92vh;overflow:auto;border:1px solid rgba(103,232,249,.22);border-radius:20px;background:linear-gradient(145deg,rgba(8,20,32,.98),rgba(4,10,20,.98));box-shadow:0 30px 100px rgba(0,0,0,.65),0 0 70px rgba(34,211,238,.08)}.bin-inspector-head{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid rgba(148,163,184,.1)}.bin-inspector-head h3{font-size:22px;font-weight:800;margin-top:5px}.bin-inspector-head p{color:#64748b;font-size:12px;margin-top:4px}.bin-close{width:36px;height:36px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.7);color:#cbd5e1;border-radius:10px;font-size:25px;cursor:pointer}.bin-inspector-body{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr);min-height:560px}.inspector-stage-wrap{position:relative;min-height:560px;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(34,211,238,.09),transparent 42%),#040b14}.inspector-stage{position:absolute;inset:0}.inspector-stage canvas{width:100%!important;height:100%!important;display:block}.twin-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(103,232,249,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 75%,transparent)}.inspection-badge{position:absolute;top:18px;left:18px;padding:8px 11px;border:1px solid rgba(66,201,142,.2);border-radius:8px;background:rgba(3,12,20,.72);color:#86efac;font-size:9px;letter-spacing:.12em}.bin-reset{position:absolute;right:18px;bottom:18px;padding:9px 12px;border-radius:8px;border:1px solid rgba(103,232,249,.2);background:rgba(3,12,20,.8);color:#9bdfff;font-size:9px;letter-spacing:.1em;cursor:pointer}.inspector-info{padding:22px;border-left:1px solid rgba(148,163,184,.1);display:flex;flex-direction:column;gap:14px}.metric-card,.metric-grid>div,.inspection-note{border:1px solid rgba(148,163,184,.1);background:rgba(15,23,42,.48);border-radius:12px;padding:15px}.metric-card span,.metric-grid span,.inspection-note>span{display:block;font-size:9px;letter-spacing:.14em;color:#64748b}.metric-card strong{display:block;font-size:40px;margin:5px 0 10px}.large-progress{height:8px;background:#172235;border-radius:999px;overflow:hidden}.large-progress i{display:block;height:100%;width:72%;border-radius:inherit;background:#f5b942;box-shadow:0 0 14px rgba(245,185,66,.3)}.metric-card small{display:block;margin-top:10px;color:#f5c76b;font-weight:800;letter-spacing:.1em;font-size:9px}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric-grid b{display:block;margin-top:6px;font-size:12px;color:#dbeafe}.inspection-note{margin-top:auto}.inspection-note p{font-size:12px;line-height:1.6;color:#94a3b8;margin-top:7px}.bin-card:nth-child(1) .bin-progress span{background:#ef4444}.bin-card:nth-child(2) .bin-progress span{background:#facc15}.bin-card:nth-child(3) .bin-progress span{background:#38bdf8}.bin-card:nth-child(4) .bin-progress span{background:#94a3b8}@media(max-width:850px){.bin-grid{grid-template-columns:1fr}.bin-header{align-items:flex-start;flex-direction:column}.bin-inspector-body{grid-template-columns:1fr}.inspector-info{border-left:0;border-top:1px solid rgba(148,163,184,.1)}.inspector-stage-wrap{min-height:430px}}
+</style>
+</head>
+ <body>
+  <div class="shell">
+   <aside id="sidebar" class="sidebar flex flex-col p-4">
+    <header class="mb-8 px-3 pt-3">
+     <div class="flex items-center gap-3">
+      <div class="orb grid h-11 w-11 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-400/10 text-cyan-300"><i data-lucide="biohazard" width="23"></i>
+      </div>
+      <div>
+       <h1 class=" m-0 font-bold tracking-tight">BioMedAI</h1>
+       <p class=" m-0 text-xs text-slate-500">Autonomous Waste Control Center</p>
+      </div>
+     </div>
+    </header>
+    <nav aria-label="Primary navigation" class="space-y-1">
+     <button data-view="dashboard" class="canva-button nav-item active focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="layout-dashboard" width="18"></i><span class="">Dashboard</span></button> <button data-view="monitoring" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="scan-line" width="18"></i><span class="">Live Monitoring</span></button> <button data-view="waste" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="archive" width="18"></i><span class="">Waste Management</span></button> <button data-view="bins" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="recycle" width="18"></i><span class="">Bin Management</span></button> <button data-view="analytics" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="chart-no-axes-combined" width="18"></i><span class="">Analytics</span></button> <button data-view="robot" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="bot" width="18"></i><span class="">Autonomous Unit</span></button> <button data-view="ai" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="brain-circuit" width="18"></i><span class="">AI Performance</span></button> <button data-view="alerts" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="triangle-alert" width="18"></i><span class="">Alerts</span></button> <button data-view="settings" class="canva-button nav-item focusable flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm"><i data-lucide="settings" width="18"></i><span class="">Settings</span></button>
+    </nav>
+    <footer class="mt-auto rounded-xl border border-emerald-400/15 bg-emerald-400/5 p-3">
+     <p class=" m-0 flex items-center gap-2 text-xs font-semibold tracking-wider text-emerald-300"><span class="pulse h-2 w-2 rounded-full bg-emerald-400"></span><span class="">System Online</span></p>
+    </footer>
+   </aside>
+   <div class="content">
+    <header class="sticky top-0 z-20 flex min-h-20 items-center justify-between border-b border-slate-700/30 bg-[#080d17cc] px-5 backdrop-blur-xl md:px-8">
+     <div class="flex items-center gap-4"><button id="menu-btn" aria-label="Open navigation" class="focusable rounded-lg p-2 text-slate-300 lg:hidden"><i data-lucide="menu"></i></button>
+      <h2 id="page-title" class="m-0 text-lg font-semibold tracking-tight">Dashboard</h2>
+     </div>
+     <div class="flex items-center gap-3">
+      <label class="hide-mobile relative"><span class="sr-only">Search activity</span><i data-lucide="search" class="absolute left-3 top-2.5 text-slate-500" width="15"></i><input id="search" class="focusable w-52 rounded-xl border border-slate-700/60 bg-slate-900/70 py-2 pl-9 pr-3 text-sm text-slate-200 placeholder:text-slate-600" placeholder="Search intelligence"></label> <button id="notice-btn" aria-label="Show notifications" class="focusable relative rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-cyan-200"><i data-lucide="bell" width="19"></i><span class="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-400"></span></button>
+      <div class="hide-mobile flex items-center gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/5 px-3 py-2 text-xs text-emerald-300"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>Systems healthy
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-cyan-300 to-blue-500 text-xs font-bold text-slate-950">
+        AM
+       </div><span class="hide-mobile text-sm text-slate-300">A. Menon</span>
+      </div>
+     </div>
+     <div id="notice-panel" class="hidden-panel glass absolute right-5 top-16 w-72 rounded-2xl p-4">
+      <p class=" m-0 text-sm font-semibold">System Notifications</p>
+      <p class=" mt-2 text-xs text-slate-400">All systems operational. No critical alerts.</p>
+     </div>
+    </header>
+    <main class="p-5 md:p-8">
+     <section id="dashboard" class="view active">
+      <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+       <div>
+        <p class="canva-tag mb-3 flex items-center gap-2 text-xs font-semibold tracking-[.15em] text-cyan-300"><span class="pulse h-2 w-2 rounded-full bg-cyan-300"></span><span class="">OPERATIONAL STATUS</span></p>
+        <h2 class=" m-0 text-3xl font-bold tracking-tight md:text-4xl">Biomedical Waste Intelligence</h2>
+        <p class=" mt-3 max-w-2xl text-sm leading-6 text-slate-400">AI-powered autonomous collection, classification, segregation and traceability across hospital operations.</p>
+       </div>
+       <p class=" tiny text-xs text-slate-500">Last sync: Just now</p>
+      </div>
+      <div class="metrics grid grid-cols-2 gap-4 xl:grid-cols-4">
+       <article class="canva-card glass kpi card p-5"><i data-lucide="package" class="mb-6 text-cyan-300" width="21"></i>
+        <p class=" m-0 text-3xl font-bold">1,284</p>
+        <p class=" mt-1 text-xs tracking-wider text-slate-400">Total Waste Items</p>
+        <p class=" mt-4 text-xs text-emerald-300">+12.4% this week</p>
+       </article>
+       <article class="canva-card glass kpi card p-5"><i data-lucide="scan-search" class="mb-6 text-blue-400" width="21"></i>
+        <p class=" m-0 text-3xl font-bold">98.2%</p>
+        <p class=" mt-1 text-xs tracking-wider text-slate-400">Detection Accuracy</p>
+        <p class=" mt-4 text-xs text-emerald-300">+1.8% vs last week</p>
+       </article>
+       <article class="canva-card glass kpi card p-5"><i data-lucide="bot" class="mb-6 text-emerald-300" width="21"></i>
+        <p class=" m-0 text-2xl font-bold">01</p>
+        <p class=" mt-1 text-xs tracking-wider text-slate-400">Autonomous Unit</p>
+        <p class=" mt-4 text-xs text-emerald-300">Online • Active</p>
+       </article>
+       <article class="canva-card glass kpi card p-5"><i data-lucide="triangle-alert" class="mb-6 text-amber-300" width="21"></i>
+        <p class=" m-0 text-3xl font-bold">03</p>
+        <p class=" mt-1 text-xs tracking-wider text-slate-400">Active Alerts</p>
+        <p class=" mt-4 text-xs text-amber-300">1 high priority</p>
+       </article>
+      </div>
+      <div class="mt-5 grid gap-5 xl:grid-cols-3">
+       <article class="canva-card glass card p-6 xl:col-span-2">
+        <div class="flex items-center justify-between">
+         <h3 class=" m-0 font-semibold">AI Intelligence</h3><span class="canva-tag text-xs text-cyan-300"></span>
+        </div>
+        <div class="mt-7 grid items-center gap-8 md:grid-cols-2">
+         <div class="flex justify-center">
+          <div class="donut relative grid h-48 w-48 place-items-center rounded-full">
+           <div class="z-10 text-center"><strong class="text-3xl">1,284</strong><span class="block text-xs text-slate-500">items today</span>
+           </div>
+          </div>
+         </div>
+         <div class="space-y-4">
+          <div class="flex justify-between text-sm"><span>Sharps</span><span class="text-cyan-300">29%</span>
+          </div>
+          <div class="progress h-1.5 rounded bg-slate-700"><span style="width:29%;background:#32d6dc"></span>
+          </div>
+          <div class="flex justify-between text-sm"><span>Infectious</span><span class="text-blue-300">22%</span>
+          </div>
+          <div class="progress h-1.5 rounded bg-slate-700"><span style="width:22%;background:#4d8dff"></span>
+          </div>
+          <div class="flex justify-between text-sm"><span>Pharma</span><span class="text-emerald-300">18%</span>
+          </div>
+          <div class="progress h-1.5 rounded bg-slate-700"><span style="width:18%;background:#42c98e"></span>
+          </div>
+          <div class="text-xs text-slate-500">
+           Pharmaceutical 13% · General 10% · Chemical 8%
+          </div>
+         </div>
+        </div>
+       </article>
+       <article class="canva-card glass card relative overflow-hidden p-6">
+        <div class="absolute -right-4 -top-4 h-28 w-28 rounded-full border border-cyan-300/10"></div>
+        <div class="flex items-start justify-between">
+         <div>
+          <h3 class=" m-0 font-semibold">Robot Status</h3>
+          <p class=" mt-2 text-xs font-bold tracking-wider text-emerald-300">Online • Autonomous Mode</p>
+         </div>
+         <div class="orb grid h-12 w-12 place-items-center rounded-full bg-cyan-400/10 text-cyan-200"><i data-lucide="bot"></i>
+         </div>
+        </div>
+        <div class="mt-8 flex items-center gap-5">
+         <div class="grid h-20 w-20 place-items-center rounded-full border-4 border-cyan-300 border-l-slate-700 text-lg font-bold">
+          78%
+         </div>
+         <div class="text-sm leading-7 text-slate-400">
+          <p class=" m-0">Current Task: Collection Route A</p>
+          <p class=" m-0">Location: Block B • Floor 2</p>
+          <p class=" m-0 text-cyan-200">Collections Today: 42</p>
+         </div>
+        </div>
+       </article>
+      </div>
+      <div class="mt-5 grid gap-5 xl:grid-cols-3">
+       <article class="canva-card glass card p-6 xl:col-span-2">
+        <div class="flex justify-between">
+         <h3 class=" m-0 font-semibold">Live Detection Feed</h3><span class="tiny text-xs text-slate-500">CAM-01</span>
+        </div>
+        <div id="feed-list" class="mt-4 divide-y divide-slate-700/50">
+         <div class="feed-row flex items-center justify-between py-4"><span class="flex items-center gap-3 text-sm"><i class="h-2 w-2 rounded-full bg-cyan-300"></i>Needle detected <b class="text-xs text-cyan-300">SHARPS</b></span><span class="tiny text-xs text-slate-500">10:32:18 · 94.7%</span>
+         </div>
+         <div class="feed-row flex items-center justify-between py-4"><span class="flex items-center gap-3 text-sm"><i class="h-2 w-2 rounded-full bg-blue-400"></i>Gauze detected <b class="text-xs text-blue-300">INFECTIOUS</b></span><span class="tiny text-xs text-slate-500">10:31:42 · 91.2%</span>
+         </div>
+         <div class="feed-row flex items-center justify-between py-4"><span class="flex items-center gap-3 text-sm"><i class="h-2 w-2 rounded-full bg-emerald-400"></i>IV Tube detected <b class="text-xs text-emerald-300">MEDICAL PLASTIC</b></span><span class="tiny text-xs text-slate-500">10:30:27 · 89.8%</span>
+         </div>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Bin Capacity</h3>
+        <div class="mt-5 grid grid-cols-2 gap-3 text-xs">
+         <div>
+          SHARPS <b class="float-right text-amber-300">72%</b>
+          <div class="progress mt-2 h-1.5 rounded bg-slate-700"><span style="width:72%;background:#f5b942"></span>
+          </div>
+         </div>
+         <div>
+          INFECTIOUS <b class="float-right text-emerald-300">58%</b>
+          <div class="progress mt-2 h-1.5 rounded bg-slate-700"><span style="width:58%;background:#42c98e"></span>
+          </div>
+         </div>
+         <div>
+          PHARMA <b class="float-right text-emerald-300">34%</b>
+          <div class="progress mt-2 h-1.5 rounded bg-slate-700"><span style="width:34%;background:#42c98e"></span>
+          </div>
+         </div>
+         <div>
+          PLASTIC <b class="float-right text-red-300">81%</b>
+          <div class="progress mt-2 h-1.5 rounded bg-slate-700"><span style="width:81%;background:#f05f6e"></span>
+          </div>
+         </div>
+        </div>
+       </article>
+      </div>
+     </section>
+     <section id="monitoring" class="view">
+      <div class="mb-6">
+       <p class=" tiny text-xs text-cyan-300">REAL-TIME VISION</p>
+       <h2 class=" mt-2 text-3xl font-bold">Live Monitoring</h2>
+      </div>
+      <div class="grid gap-5 xl:grid-cols-3">
+       <article class="canva-card glass card overflow-hidden xl:col-span-2">
+        <div class="flex items-center justify-between border-b border-slate-700/40 px-5 py-4"><span class="canva-tag flex items-center gap-2 text-xs text-red-300"><i class="pulse h-2 w-2 rounded-full bg-red-400"></i><span class="">LIVE CAMERA</span></span><span class="tiny text-xs text-slate-500">CAM-01 / WARD A</span>
+        </div>
+        <div class="scan relative aspect-video overflow-hidden bg-slate-950"><img loading="lazy" class="canva-image h-full w-full object-cover opacity-55">
+         <div class="absolute left-[28%] top-[25%] h-[46%] w-[38%] border-2 border-cyan-300 shadow-[0_0_20px_rgba(50,214,220,.6)]">
+          <div class="absolute -top-9 left-0 rounded-tr-lg bg-cyan-300 px-3 py-2 text-xs font-bold text-slate-950">
+           NEEDLE · 94.7%
+          </div>
+         </div>
+         <div class="absolute bottom-4 left-4 tiny text-[10px] text-cyan-100/70">
+          AI TRACKING / 30 FPS / SECURE STREAM
+         </div>
+        </div>
+       </article>
+       <aside class="canva-panel glass card p-6">
+        <h3 class=" m-0 font-semibold">AI Detection Results</h3>
+        <dl class="mt-7 space-y-5 text-sm">
+         <div>
+          <dt class="text-xs text-slate-500">
+           DETECTED OBJECT
+          </dt>
+          <dd id="ai-detected-object" class="mt-1 font-bold text-cyan-200">
+           —
+          </dd>
+         </div>
+         <div>
+          <dt class="text-xs text-slate-500">
+           FINAL CATEGORY
+          </dt>
+          <dd id="ai-final-category" class="mt-1 font-bold text-blue-300">
+           —
+          </dd>
+         </div>
+         <div>
+          <dt class="text-xs text-slate-500">
+           CONFIDENCE
+          </dt>
+          <dd id="ai-confidence" class="mt-1 font-bold">
+           —
+          </dd>
+         </div>
+         <div>
+          <dt class="text-xs text-slate-500">
+           DESTINATION
+          </dt>
+          <dd id="ai-destination" class="mt-1 font-bold">
+           —
+          </dd>
+         </div>
+         <div>
+          <dt class="text-xs text-slate-500">
+           STATUS
+          </dt>
+          <dd id="ai-status" class="mt-1 font-bold text-slate-400">
+           AWAITING SCAN
+          </dd>
+         </div>
+        </dl>
+        </aside>
+       </div>
+
+       <!-- AI Classification Upload Panel — MobileViT inference -->
+       <article class="canva-card glass card mt-5 p-6" id="ai-classify-panel">
+        <div class="flex items-center justify-between mb-5">
+         <div>
+          <p class="tiny text-xs text-cyan-300 m-0 mb-1">MOBILEVIT · MEDICAL WASTE CLASSIFIER</p>
+          <h3 class=" m-0 font-semibold">AI Image Classification</h3>
+         </div>
+         <span id="ai-classify-status-badge" class="tiny text-xs text-slate-500 border border-slate-700/60 px-3 py-1.5 rounded-full">READY</span>
+        </div>
+        <div class="grid gap-5 md:grid-cols-2">
+         <!-- Upload zone -->
+         <div>
+          <input type="file" id="ai-file-input" accept="image/*" class="hidden" aria-label="Upload waste image for classification">
+          <div id="ai-drop-zone"
+               class="relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-900/40 p-8 text-center cursor-pointer transition-colors hover:border-cyan-400/60 hover:bg-cyan-400/5"
+               role="button" tabindex="0" aria-label="Click or drag to upload image">
+           <div id="ai-upload-icon" class="text-slate-500">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+           </div>
+           <img id="ai-preview" class="hidden max-h-36 rounded-lg object-contain w-full" alt="Image preview">
+           <p id="ai-drop-label" class="text-xs text-slate-500 m-0">Click to upload or drag &amp; drop<br><span class="text-slate-600">PNG · JPG · JPEG · WEBP · BMP</span></p>
+          </div>
+          <div class="mt-3 flex gap-2">
+           <button id="ai-upload-btn"
+                   class="canva-button focusable flex-1 rounded-xl border border-slate-600 bg-slate-800/60 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:border-cyan-400/50 hover:text-cyan-200 transition-colors"
+                   type="button">
+            SELECT IMAGE
+           </button>
+           <button id="ai-classify-btn"
+                   class="canva-button focusable flex-1 rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-bold text-slate-950 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                   type="button" disabled>
+            CLASSIFY
+           </button>
+          </div>
+          <p id="ai-error-msg" class="mt-2 text-xs text-red-400 hidden"></p>
+         </div>
+         <!-- Per-class probability bars -->
+         <div id="ai-probs-panel">
+          <p class="text-xs text-slate-500 mb-3">CLASS PROBABILITIES</p>
+          <div id="ai-probs-list" class="space-y-2 text-xs">
+           <p class="text-slate-600 text-xs">Run classification to see results.</p>
+          </div>
+         </div>
+        </div>
+       </article>
+
+       <article class="canva-card glass card mt-5 p-6">
+        <h3 class=" m-0 font-semibold">Detection Timeline</h3>
+       <div class="mt-5 flex flex-wrap gap-3"><span class="rounded-lg border border-cyan-400/25 bg-cyan-400/10 px-4 py-3 text-xs">10:32:18 · Needle · Sharps</span><span class="rounded-lg border border-blue-400/25 bg-blue-400/10 px-4 py-3 text-xs">10:31:42 · Gauze · Infectious</span><span class="rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-xs">10:30:27 · IV Tube · Plastic</span>
+       </div>
+      </article>
+     </section>
+     <section id="robot" class="view">
+      <div class="mb-6">
+       <p class=" tiny text-xs text-cyan-300">AUTONOMOUS ROBOTICS</p>
+       <h2 class=" mt-2 text-3xl font-bold">Autonomous Unit</h2>
+      </div>
+      <div class="grid gap-5 xl:grid-cols-3">
+       <article class="canva-card glass map-grid card relative min-h-[390px] overflow-hidden p-5 xl:col-span-2"><span class="absolute left-[8%] top-[15%] rounded bg-slate-800 px-3 py-2 text-xs">Ward A</span><span class="absolute right-[10%] top-[20%] rounded bg-slate-800 px-3 py-2 text-xs">ICU</span><span class="absolute bottom-[18%] left-[22%] rounded bg-slate-800 px-3 py-2 text-xs">Collection Point</span><span class="absolute bottom-[12%] right-[12%] rounded bg-slate-800 px-3 py-2 text-xs">Base Station</span>
+        <svg class="absolute inset-0 h-full w-full"><path d="M100 130 C230 130 220 300 390 300 S540 150 690 260" fill="none" stroke="#32d6dc" stroke-width="3" class="route" opacity=".8" />
+        </svg>
+        <div class="orb pulse absolute left-[42%] top-[49%] grid h-12 w-12 place-items-center rounded-full bg-cyan-300 text-slate-950"><i data-lucide="bot" width="21"></i>
+        </div>
+       </article>
+       <aside class="canva-panel glass card p-6">
+        <h3 class=" m-0 text-xl font-bold">BioBot-01</h3>
+        <p class=" mt-2 text-xs font-bold tracking-widest text-emerald-300">ONLINE</p>
+        <div class="mt-8 grid grid-cols-2 gap-4 text-sm">
+         <div><span class="text-xs text-slate-500">BATTERY</span><b class="block mt-1">78%</b>
+         </div>
+         <div><span class="text-xs text-slate-500">SPEED</span><b class="block mt-1">0.6 m/s</b>
+         </div>
+         <div><span class="text-xs text-slate-500">DISTANCE</span><b class="block mt-1">2.4 km</b>
+         </div>
+         <div><span class="text-xs text-slate-500">COLLECTIONS</span><b class="block mt-1">38</b>
+         </div>
+        </div>
+        <div class="mt-8 grid gap-3"><button id="start-route" class="canva-button focusable rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950">START ROUTE</button><button id="pause-route" class="canva-button focusable rounded-xl border border-blue-400/40 bg-blue-400/10 px-4 py-3 text-sm font-semibold text-blue-200">PAUSE</button><button id="return-route" class="canva-button focusable rounded-xl border border-slate-600 px-4 py-3 text-sm text-slate-300">RETURN TO BASE</button>
+        </div>
+        <p id="route-state" class="mt-4 text-center text-xs text-slate-500">Ready for route assignment</p>
+       </aside>
+      </div>
+     <section id="robot-3d-showcase" aria-label="Interactive 3D autonomous unit">
+        <div class="robot3d-stage" id="robot3d-stage"></div>
+        <div class="robot3d-label">
+          <div class="eyebrow">3D ENGINEERING VIEW</div>
+          <h3 id="robot3d-title">BioBot-01 · Exterior</h3>
+          <p id="robot3d-subtitle">Interactive exterior model</p>
+        </div>
+        <div class="robot3d-state" id="robot3d-state">EXTERIOR VIEW</div>
+        <div class="robot3d-help" id="robot3d-help">Click the robot to open the front section view · Drag to rotate · Scroll to zoom</div>
+        <button class="robot3d-reset" id="robot3d-reset" type="button">RESET VIEW</button>
+      </section>
+</section>
+     
+      
+      <section id="analytics" class="view">
+      <h2 class=" text-3xl font-bold">Analytics</h2>
+      <p class=" mt-2 text-slate-400">Operational insights across waste streams, collection routes and system efficiency.</p>
+      <div class="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Waste Distribution</h3>
+        <div class="donut relative mx-auto mt-7 grid h-36 w-36 place-items-center rounded-full"><b class="z-10 text-sm">1,284 kg</b>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Detection Trend</h3>
+        <div class="mt-8 flex h-32 items-end gap-3"><i class="w-full bg-cyan-400/30" style="height:35%"></i><i class="w-full bg-cyan-400/40" style="height:59%"></i><i class="w-full bg-cyan-400/50" style="height:44%"></i><i class="w-full bg-cyan-400/70" style="height:82%"></i><i class="w-full bg-cyan-300" style="height:66%"></i>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Collection Efficiency</h3>
+        <p class="mt-8 text-5xl font-bold text-emerald-300">96.4%</p>
+        <p class="mt-3 text-sm text-slate-500">Collection efficiency this week</p>
+       </article>
+       <article class="canva-card glass card p-6 md:col-span-2">
+        <h3 class=" m-0 font-semibold">Detection Confidence</h3>
+        <div class="mt-7 grid grid-cols-6 gap-2 items-end h-28"><i class="bg-blue-400/40 h-1/2"></i><i class="bg-blue-400/50 h-4/5"></i><i class="bg-blue-400/60 h-2/3"></i><i class="bg-blue-400/80 h-full"></i><i class="bg-blue-400/45 h-1/3"></i><i class="bg-blue-300 h-3/5"></i>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Weekly Collections</h3>
+        <p class="mt-7 tiny text-sm leading-8 text-slate-400">MON 182 · TUE 195<br>
+          WED 164 · THU 221<br>
+          FRI 203 · SAT 147</p>
+       </article>
+      </div>
+     </section>
+     <section id="ai" class="view">
+      <h2 class=" text-3xl font-bold">AI Performance</h2>
+      <p class=" mt-2 text-slate-400">Model performance overview for the deployed computer-vision pipeline. Metrics below are demo placeholders until final evaluation.</p>
+      <div class="mt-6 grid gap-5 md:grid-cols-2">
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 text-xl font-bold">YOLO11s Detection Model</h3>
+        <div class="mt-6 grid grid-cols-2 gap-5 text-sm">
+         <div>
+          mAP@50 <b class="block mt-1 text-cyan-300">94.7%</b>
+         </div>
+         <div>
+          mAP@50–95 <b class="block mt-1 text-cyan-300">82.4%</b>
+         </div>
+         <div>
+          Precision <b class="block mt-1">93.1%</b>
+         </div>
+         <div>
+          Recall <b class="block mt-1">91.8%</b>
+         </div>
+         <div>
+          Inference Time <b class="block mt-1">18 ms</b>
+         </div>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 text-xl font-bold">MobileViT Classification Model</h3>
+        <div class="mt-6 grid grid-cols-2 gap-5 text-sm">
+         <div>
+          Accuracy <b class="block mt-1 text-blue-300">96.2%</b>
+         </div>
+         <div>
+          Precision <b class="block mt-1 text-blue-300">95.5%</b>
+         </div>
+         <div>
+          Recall <b class="block mt-1">94.9%</b>
+         </div>
+         <div>
+          F1 Score <b class="block mt-1">95.2%</b>
+         </div>
+         <div>
+          Inference Time <b class="block mt-1">12 ms</b>
+         </div>
+        </div>
+       </article>
+      </div>
+      <div class="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Confusion Matrix</h3>
+        <div class="mt-6 grid grid-cols-4 gap-1"><i class="h-10 bg-cyan-300"></i><i class="h-10 bg-cyan-400/30"></i><i class="h-10 bg-cyan-400/10"></i><i class="h-10 bg-cyan-400/10"></i><i class="h-10 bg-cyan-400/20"></i><i class="h-10 bg-cyan-300"></i><i class="h-10 bg-cyan-400/20"></i><i class="h-10 bg-cyan-400/10"></i>
+        </div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Training Loss</h3>
+        <div class="mt-8 h-24 border-b border-l border-slate-600 bg-gradient-to-tr from-transparent via-blue-400/20 to-cyan-300/30"></div>
+       </article>
+       <article class="canva-card glass card p-6">
+        <h3 class=" m-0 font-semibold">Class Performance</h3>
+        <div class="mt-6 space-y-3 text-xs">
+         <div>
+          Sharps <span class="float-right text-cyan-300">97%</span>
+         </div>
+         <div>
+          Infectious <span class="float-right text-cyan-300">94%</span>
+         </div>
+         <div>
+          Plastic <span class="float-right text-cyan-300">92%</span>
+         </div>
+        </div>
+       </article>
+      </div>
+     </section>
+     <section id="waste" class="view">
+      <h2 class=" text-3xl font-bold">Waste Management</h2>
+      <article class="canva-card glass card mt-6 p-7">
+       <h3 class=" m-0 font-semibold">Six-Category Waste Classification</h3>
+       <p class=" mt-3 max-w-2xl text-slate-400">Track biomedical waste by final segregation category and route each class to its designated bin.</p>
+      </article>
+     </section>
+     <section id="bins" class="view">
+      <div class="bin-header">
+       <div>
+        <div class="bin-eyebrow">SMART BIN MANAGEMENT</div>
+        <h2 class="text-3xl font-bold">AI Waste Segregation</h2>
+        <p class="bin-subtitle">Digital-twin monitoring of biomedical waste containers.</p>
+       </div>
+       <div class="bin-system-status"><span class="status-dot"></span> SYSTEM ONLINE</div>
+      </div>
+      <div id="bin-grid" class="bin-grid mt-6">
+       <article class="bin-card canva-card glass" data-bin="sharps" tabindex="0" role="button" aria-label="Open Sharps bin inspection">
+        <div class="bin-card-top"><div><span class="bin-color red"></span><b>SHARPS</b></div><span class="bin-category">RED</span></div>
+        <div class="bin-stage" id="bin-stage-sharps"></div>
+        <div class="bin-card-bottom"><div><span class="bin-percent" id="bin-percent-sharps">72%</span><div class="bin-progress"><span id="bin-progress-sharps"></span></div></div><div class="bin-status warning" id="bin-status-sharps">COLLECTION SOON</div></div>
+       </article>
+       <article class="bin-card canva-card glass" data-bin="infectious" tabindex="0" role="button" aria-label="Open Infectious bin inspection">
+        <div class="bin-card-top"><div><span class="bin-color yellow"></span><b>INFECTIOUS</b></div><span class="bin-category">YELLOW</span></div>
+        <div class="bin-stage" id="bin-stage-infectious"></div>
+        <div class="bin-card-bottom"><div><span class="bin-percent" id="bin-percent-infectious">58%</span><div class="bin-progress"><span id="bin-progress-infectious"></span></div></div><div class="bin-status normal" id="bin-status-infectious">NORMAL</div></div>
+       </article>
+       <article class="bin-card canva-card glass" data-bin="pharma" tabindex="0" role="button" aria-label="Open Pharmaceutical bin inspection">
+        <div class="bin-card-top"><div><span class="bin-color blue"></span><b>PHARMA</b></div><span class="bin-category">BLUE</span></div>
+        <div class="bin-stage" id="bin-stage-pharma"></div>
+        <div class="bin-card-bottom"><div><span class="bin-percent" id="bin-percent-pharma">34%</span><div class="bin-progress"><span id="bin-progress-pharma"></span></div></div><div class="bin-status normal" id="bin-status-pharma">NORMAL</div></div>
+       </article>
+       <article class="bin-card canva-card glass" data-bin="general" tabindex="0" role="button" aria-label="Open General bin inspection">
+        <div class="bin-card-top"><div><span class="bin-color black"></span><b>GENERAL</b></div><span class="bin-category">BLACK</span></div>
+        <div class="bin-stage" id="bin-stage-general"></div>
+        <div class="bin-card-bottom"><div><span class="bin-percent" id="bin-percent-general">41%</span><div class="bin-progress"><span id="bin-progress-general"></span></div></div><div class="bin-status normal" id="bin-status-general">NORMAL</div></div>
+       </article>
+      </div>
+
+      <div id="bin-inspector" class="bin-inspector" aria-hidden="true">
+       <div class="bin-inspector-panel">
+        <div class="bin-inspector-head">
+         <div><div class="bin-eyebrow">DIGITAL TWIN · LIVE INSPECTION</div><h3 id="inspector-title">SHARPS BIN</h3><p id="inspector-subtitle">Red container · Sharps waste</p></div>
+         <button id="bin-inspector-close" class="bin-close" type="button" aria-label="Close inspection">×</button>
+        </div>
+        <div class="bin-inspector-body">
+         <div class="inspector-stage-wrap"><div id="bin-inspector-stage" class="inspector-stage"></div><div class="twin-grid"></div><div class="inspection-badge"><span class="status-dot"></span>3D TWIN ACTIVE</div><button id="bin-reset-camera" class="bin-reset" type="button">↺ RESET CAMERA</button></div>
+         <aside class="inspector-info">
+          <div class="metric-card"><span>FILL LEVEL</span><strong id="inspector-percent">72%</strong><div class="large-progress"><i id="inspector-progress"></i></div><small id="inspector-status">COLLECTION SOON</small></div>
+          <div class="metric-grid"><div><span>CATEGORY</span><b id="inspector-category">SHARPS</b></div><div><span>BIN COLOR</span><b id="inspector-color">RED</b></div><div><span>THRESHOLD</span><b>70%</b></div><div><span>MONITOR</span><b>AI LIVE</b></div></div>
+          <div class="inspection-note"><span>AI CONTROL</span><p id="inspector-note">Capacity has crossed the collection threshold. Autonomous pickup should be prioritized.</p></div>
+         </aside>
+        </div>
+       </div>
+      </div>
+     </section>
+     <section id="alerts" class="view">
+      <h2 class=" text-3xl font-bold">Alerts</h2>
+      <div id="alerts-list" class="mt-6 space-y-3">
+       <article class="canva-card card border border-red-400/25 bg-red-400/10 p-5"><b class="text-red-300">CRITICAL · Pharma Bin</b>
+        <p class="mt-2 text-sm text-slate-300">Capacity has reached 81%. Schedule autonomous collection.</p>
+       </article>
+       <article class="canva-card card border border-amber-400/25 bg-amber-400/10 p-5"><b class="text-amber-300">WARNING · Sharps Bin</b>
+        <p class="mt-2 text-sm text-slate-300">Capacity is above the configured threshold.</p>
+       </article>
+       <article class="canva-card card border border-emerald-400/25 bg-emerald-400/10 p-5"><b class="text-emerald-300">SUCCESS · Route Completed</b>
+        <p class="mt-2 text-sm text-slate-300">UNIT-01 completed collection cycle 038.</p>
+       </article>
+      </div>
+     </section>
+     <section id="settings" class="view">
+      <h2 class=" text-3xl font-bold">Settings</h2>
+      <article class="canva-card glass card mt-6 p-7">
+       <h3 class=" m-0 font-semibold">System Configuration</h3>
+       <p class=" mt-3 text-slate-400">Manage monitoring preferences, alert thresholds and dashboard behavior.</p>
+      </article>
+     </section>
+    </main>
+   </div>
+  </div>
+  
+  
+<script type="module">
+import * as THREE from "three";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+
+(()=>{
+ const stage=document.getElementById("robot3d-stage");
+ const title=document.getElementById("robot3d-title");
+ const subtitle=document.getElementById("robot3d-subtitle");
+ const state=document.getElementById("robot3d-state");
+ const help=document.getElementById("robot3d-help");
+ const reset=document.getElementById("robot3d-reset");
+ if(!stage)return;
+
+ const scene=new THREE.Scene();
+ scene.background=new THREE.Color(0x050a13);
+ const camera=new THREE.PerspectiveCamera(34,1,.01,1000);
+ camera.position.set(0,.35,4.2);
+
+ const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=1.15;
+ stage.appendChild(renderer.domElement);
+
+ const controls=new OrbitControls(camera,renderer.domElement);
+ controls.enableDamping=true; controls.dampingFactor=.065;
+ controls.enablePan=false; controls.minDistance=1.7; controls.maxDistance=7.5;
+ controls.target.set(0,0,0);
+
+ scene.add(new THREE.HemisphereLight(0x9bdfff,0x07101d,2));
+ const key=new THREE.DirectionalLight(0xffffff,3); key.position.set(4,6,5); scene.add(key);
+ const rim=new THREE.DirectionalLight(0x32d6dc,2.6); rim.position.set(-5,2,-4); scene.add(rim);
+ const fill=new THREE.PointLight(0x4d8dff,1.8,12); fill.position.set(2,-1,3); scene.add(fill);
+
+ const ground=new THREE.Mesh(
+   new THREE.CircleGeometry(2.3,64),
+   new THREE.MeshBasicMaterial({color:0x0c2635,transparent:true,opacity:.26,depthWrite:false,blending:THREE.AdditiveBlending})
+ );
+ ground.rotation.x=-Math.PI/2; ground.position.y=-1.15; scene.add(ground);
+
+ const loader=new GLTFLoader();
+ const urls={exterior:"./ExteriorView.glb",section:"./ExplodedView.glb",exploded:"./SectionView.glb"};
+ const models={}; let current="exterior",activeRoot=null,autoRotate=true;
+ let downX=0,downY=0,moved=false;
+
+ function fit(root){
+   const box=new THREE.Box3().setFromObject(root);
+   const size=box.getSize(new THREE.Vector3());
+   const center=box.getCenter(new THREE.Vector3());
+   const maxDim=Math.max(size.x,size.y,size.z)||1;
+   root.position.sub(center);
+   const scale=2.05/maxDim;
+   root.scale.setScalar(scale); root.userData.baseScale=scale;
+   camera.position.set(0,maxDim*.10,Math.max(3.2,maxDim*2.55));
+   controls.target.set(0,0,0); controls.update();
+ }
+
+ function setModel(name){
+   if(!models[name])return;
+   if(activeRoot)scene.remove(activeRoot);
+   activeRoot=models[name].clone(true);
+   activeRoot.traverse(o=>{if(o.isMesh){o.userData.robotPart=true;if(o.material)o.material=o.material.clone()}});
+   fit(activeRoot);
+   const base=activeRoot.userData.baseScale;
+   activeRoot.scale.setScalar(base*.82);
+   scene.add(activeRoot);
+   const start=performance.now();
+   function enter(now){
+     if(!activeRoot)return;
+     const t=Math.min(1,(now-start)/360),e=1-Math.pow(1-t,3);
+     activeRoot.scale.setScalar(base*(.82+.18*e));
+     if(t<1)requestAnimationFrame(enter);
+   }
+   requestAnimationFrame(enter);
+   current=name;
+   if(name==="exterior"){
+     title.textContent="BioBot-01 · Exterior"; subtitle.textContent="Interactive exterior model";
+     state.textContent="EXTERIOR VIEW";
+     help.textContent="Click the robot to open the front section view · Drag to rotate · Scroll to zoom";
+   }else if(name==="section"){
+     title.textContent="BioBot-01 · Front Section"; subtitle.textContent="Front cutaway / internal section";
+     state.textContent="SECTION VIEW";
+     help.textContent="Click a component in the section to open the exploded bin view";
+   }else{
+     title.textContent="BioBot-01 · Exploded Bin"; subtitle.textContent="Exploded engineering view";
+     state.textContent="EXPLODED VIEW";
+     help.textContent="Exploded view active · Drag to rotate · RESET returns to exterior";
+   }
+ }
+
+ Promise.all(Object.entries(urls).map(([name,url])=>new Promise((resolve,reject)=>{
+   loader.load(url,g=>{models[name]=g.scene;resolve()},undefined,reject);
+ }))).then(()=>setModel("exterior")).catch(err=>{
+   console.error(err); state.textContent="MODEL LOAD ERROR";
+   help.textContent="Keep all three GLB files beside this HTML file.";
+ });
+
+ const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+ renderer.domElement.addEventListener("pointerdown",e=>{downX=e.clientX;downY=e.clientY;moved=false});
+ renderer.domElement.addEventListener("pointermove",e=>{if(Math.hypot(e.clientX-downX,e.clientY-downY)>7)moved=true});
+ renderer.domElement.addEventListener("pointerup",e=>{
+   if(moved||!activeRoot)return;
+   const r=renderer.domElement.getBoundingClientRect();
+   pointer.x=((e.clientX-r.left)/r.width)*2-1; pointer.y=-((e.clientY-r.top)/r.height)*2+1;
+   raycaster.setFromCamera(pointer,camera);
+   if(!raycaster.intersectObject(activeRoot,true).length)return;
+   if(current==="exterior")setModel("section");
+   else if(current==="section")setModel("exploded");
+ });
+
+ reset.addEventListener("click",()=>setModel("exterior"));
+ controls.addEventListener("start",()=>autoRotate=false);
+ controls.addEventListener("end",()=>setTimeout(()=>autoRotate=true,900));
+
+ function resize(){
+   const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
+   camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.setSize(w,h);
+ }
+ addEventListener("resize",resize); resize();
+ window.__robot3DResize=resize;
+
+ let last=performance.now();
+ function animate(now){
+   requestAnimationFrame(animate);
+   const dt=(now-last)/1000;last=now;
+   if(activeRoot&&autoRotate&&!moved)activeRoot.rotation.y+=dt*.18;
+   controls.update();renderer.render(scene,camera);
+ }
+ requestAnimationFrame(animate);
+})();
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+(()=>{
+ const configs={
+  sharps:{label:'SHARPS',color:'RED',file:'./bins/redbin.glb',percent:72,desc:'Red container · Sharps waste'},
+  infectious:{label:'INFECTIOUS',color:'YELLOW',file:'./bins/yellowbin.glb',percent:58,desc:'Yellow container · Infectious waste'},
+  pharma:{label:'PHARMA',color:'BLUE',file:'./bins/bluebin.glb',percent:34,desc:'Blue container · Pharmaceutical waste'},
+  general:{label:'GENERAL',color:'BLACK',file:'./bins/blackbin.glb',percent:41,desc:'Black container · General waste'}
+ };
+ const loader=new GLTFLoader(); const cards={}; let inspector=null;
+ const statusFor=p=>p>=85?['CRITICAL','critical']:p>=70?['COLLECTION SOON','warning']:['NORMAL','normal'];
+ function lights(scene){
+  scene.add(new THREE.HemisphereLight(0xb8ecff,0x06101c,2.1));
+  const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(4,6,5);scene.add(key);
+  const rim=new THREE.DirectionalLight(0x38d9ff,2.4);rim.position.set(-5,2,-4);scene.add(rim);
+  const fill=new THREE.PointLight(0x4d8dff,1.5,12);fill.position.set(2,-1,3);scene.add(fill);
+ }
+ function rendererFor(stage){const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.outputColorSpace=THREE.SRGBColorSpace;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.15;stage.appendChild(r.domElement);return r}
+ function fit(root,camera,controls,size){const box=new THREE.Box3().setFromObject(root),v=box.getSize(new THREE.Vector3()),c=box.getCenter(new THREE.Vector3()),m=Math.max(v.x,v.y,v.z)||1;root.position.sub(c);root.scale.setScalar(size/m);camera.position.set(0,size*.08,size*2.55);controls.target.set(0,0,0);controls.update()}
+ function resize(stage,camera,renderer){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
+ function initCard(key){
+  const cfg=configs[key],stage=document.getElementById('bin-stage-'+key),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,.01,100),renderer=rendererFor(stage);
+  lights(scene); const ctl=new OrbitControls(camera,renderer.domElement);ctl.enableRotate=false;ctl.enablePan=false;ctl.enableDamping=true;ctl.enableZoom=true;ctl.minDistance=1.7;ctl.maxDistance=5;
+  const ringColor=key==='sharps'?0xef4444:key==='infectious'?0xfacc15:key==='pharma'?0x38bdf8:0x94a3b8;
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.72,.77,64),new THREE.MeshBasicMaterial({color:ringColor,transparent:true,opacity:.2,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=-1.03;scene.add(ring);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(1.45,64),new THREE.MeshBasicMaterial({color:0x0c2635,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.04;scene.add(floor);
+  cards[key]={stage,scene,camera,renderer,controls:ctl,root:null};
+  loader.load(cfg.file,g=>{const root=g.scene;root.traverse(o=>{if(o.isMesh&&o.material)o.material=o.material.clone()});fit(root,camera,ctl,2.05);scene.add(root);cards[key].root=root},undefined,e=>console.error('Bin model load failed:',key,e));
+ }
+ Object.keys(configs).forEach(initCard);
+ function updateCard(key){const cfg=configs[key],[st,cl]=statusFor(cfg.percent);document.getElementById('bin-percent-'+key).textContent=cfg.percent+'%';document.getElementById('bin-progress-'+key).style.width=cfg.percent+'%';const el=document.getElementById('bin-status-'+key);el.textContent=st;el.className='bin-status '+cl}
+ Object.keys(configs).forEach(updateCard);
+ const overlay=document.getElementById('bin-inspector');
+ function openInspector(key){
+  const cfg=configs[key];closeInspector();overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');
+  document.getElementById('inspector-title').textContent=cfg.label+' BIN';document.getElementById('inspector-subtitle').textContent=cfg.desc;document.getElementById('inspector-percent').textContent=cfg.percent+'%';document.getElementById('inspector-category').textContent=cfg.label;document.getElementById('inspector-color').textContent=cfg.color;
+  const [st,cl]=statusFor(cfg.percent),status=document.getElementById('inspector-status');status.textContent=st;status.style.color=cl==='critical'?'#fb7185':cl==='warning'?'#f5c76b':'#67e8b0';document.getElementById('inspector-progress').style.width=cfg.percent+'%';document.getElementById('inspector-progress').style.background=cl==='critical'?'#f05f6e':cl==='warning'?'#f5b942':'#42c98e';document.getElementById('inspector-note').textContent=cfg.percent>=70?'Capacity has crossed the collection threshold. Autonomous pickup should be prioritized.':'Capacity is within the normal operating range. Continue AI monitoring.';
+  const stage=document.getElementById('bin-inspector-stage'),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.01,100),renderer=rendererFor(stage),ctl=new OrbitControls(camera,renderer.domElement);ctl.enableRotate=false;ctl.enablePan=false;ctl.enableDamping=true;ctl.enableZoom=true;ctl.minDistance=2;ctl.maxDistance=7;lights(scene);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(2.2,64),new THREE.MeshBasicMaterial({color:0x0c2635,transparent:true,opacity:.35,depthWrite:false,blending:THREE.AdditiveBlending}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.3;scene.add(floor);
+  const ringColor=cfg.color==='RED'?0xef4444:cfg.color==='YELLOW'?0xfacc15:cfg.color==='BLUE'?0x38bdf8:0x94a3b8;const ring=new THREE.Mesh(new THREE.RingGeometry(1.0,1.06,72),new THREE.MeshBasicMaterial({color:ringColor,transparent:true,opacity:.22,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=-1.28;scene.add(ring);
+  inspector={stage,scene,camera,renderer,controls:ctl,root:null,key}; resize(stage,camera,renderer);
+  loader.load(cfg.file,g=>{if(!inspector||inspector.key!==key)return;const root=g.scene;root.traverse(o=>{if(o.isMesh&&o.material)o.material=o.material.clone()});fit(root,camera,ctl,2.55);scene.add(root);inspector.root=root},undefined,e=>console.error('Inspector model load failed:',e));
+ }
+ function closeInspector(){if(!inspector)return;inspector.renderer.dispose();inspector.renderer.domElement.remove();inspector=null;overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true')}
+ document.querySelectorAll('.bin-card').forEach(card=>{const key=card.dataset.bin;card.addEventListener('click',()=>openInspector(key));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openInspector(key)}})});
+ document.getElementById('bin-inspector-close').addEventListener('click',closeInspector);document.getElementById('bin-reset-camera').addEventListener('click',()=>{if(inspector?.root)fit(inspector.root,inspector.camera,inspector.controls,2.55)});overlay.addEventListener('click',e=>{if(e.target===overlay)closeInspector()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInspector()});
+ addEventListener('resize',()=>{Object.values(cards).forEach(c=>resize(c.stage,c.camera,c.renderer));if(inspector)resize(inspector.stage,inspector.camera,inspector.renderer)});
+ window.__bin3DResize=()=>{Object.values(cards).forEach(c=>resize(c.stage,c.camera,c.renderer));if(inspector)resize(inspector.stage,inspector.camera,inspector.renderer)};
+ function frame(){requestAnimationFrame(frame);Object.values(cards).forEach(c=>{c.controls.update();c.renderer.render(c.scene,c.camera)});if(inspector){inspector.controls.update();inspector.renderer.render(inspector.scene,inspector.camera)}}frame();
+})();
+</script>
+<script>
+  const titles={dashboard:"Dashboard",monitoring:"Live Monitoring",waste:"Waste Management",robot:"Autonomous Unit",bins:"Bin Management",analytics:"Analytics",ai:"AI Performance",alerts:"Alerts",settings:"Settings"};
+  const robot3DShowcase=document.getElementById("robot-3d-showcase");
+  function syncRobot3DVisibility(view){
+    if(!robot3DShowcase)return;
+    if(view==="robot"){
+      robot3DShowcase.style.display="block";
+      requestAnimationFrame(()=>{if(window.__robot3DResize)window.__robot3DResize()});
+    }else{
+      robot3DShowcase.style.display="none";
+    }
+    if(view==="bins"){
+      requestAnimationFrame(()=>{if(window.__bin3DResize)window.__bin3DResize()});
+    }
+  }
+  document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",()=>{const view=button.dataset.view;document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));document.querySelectorAll("[data-view]").forEach(n=>n.classList.toggle("active",n===button));document.getElementById("page-title").textContent=titles[view];document.getElementById("sidebar").classList.remove("open");syncRobot3DVisibility(view)}));
+  syncRobot3DVisibility(document.querySelector(".view.active")?document.querySelector(".view.active").id:"dashboard");
+  document.getElementById("menu-btn").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
+  document.getElementById("notice-btn").addEventListener("click",()=>document.getElementById("notice-panel").classList.toggle("hidden-panel"));
+  document.getElementById("search").addEventListener("input",e=>{const q=e.target.value.toLowerCase();document.querySelectorAll(".feed-row,#alerts-list article").forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?"":"none")});
+  const state=document.getElementById("route-state");document.getElementById("start-route").addEventListener("click",()=>state.textContent="Route active · Ward A collection underway");document.getElementById("pause-route").addEventListener("click",()=>state.textContent=state.textContent.includes("paused")?"Route resumed · Navigation active":"Route paused · UNIT-01 holding position");document.getElementById("return-route").addEventListener("click",()=>state.textContent="Return route active · Destination: Base Station");
+  lucide.createIcons();
+
+  // -------------------------------------------------------------------------
+  // MobileViT AI Classification — /api/predict integration
+  // -------------------------------------------------------------------------
+  (function () {
+    var API_PREDICT = "/api/predict";
+    var API_HEALTH  = "/api/health";
+
+    // DOM refs
+    var fileInput    = document.getElementById("ai-file-input");
+    var dropZone     = document.getElementById("ai-drop-zone");
+    var uploadIcon   = document.getElementById("ai-upload-icon");
+    var preview      = document.getElementById("ai-preview");
+    var dropLabel    = document.getElementById("ai-drop-label");
+    var uploadBtn    = document.getElementById("ai-upload-btn");
+    var classifyBtn  = document.getElementById("ai-classify-btn");
+    var errorMsg     = document.getElementById("ai-error-msg");
+    var probsList    = document.getElementById("ai-probs-list");
+    var badge        = document.getElementById("ai-classify-status-badge");
+
+    // Result panel refs (existing elements now with IDs)
+    var resObject    = document.getElementById("ai-detected-object");
+    var resCategory  = document.getElementById("ai-final-category");
+    var resConf      = document.getElementById("ai-confidence");
+    var resDest      = document.getElementById("ai-destination");
+    var resStatus    = document.getElementById("ai-status");
+
+    var timeline     = document.querySelector("#monitoring .canva-card .flex.flex-wrap.gap-3");
+
+    var selectedFile = null;
+
+    // Destination mapping — which bin receives which waste class
+    var DESTINATION_MAP = {
+      Cotton_Bandage: "INFECTIOUS BIN (YELLOW)",
+      Glove:          "INFECTIOUS BIN (YELLOW)",
+      IV_Bottle:      "PHARMA BIN (BLUE)",
+      Mask:           "INFECTIOUS BIN (YELLOW)",
+      Pill_Strip:     "PHARMA BIN (BLUE)",
+      Syringe:        "SHARPS BIN (RED)"
+    };
+
+    // Category mapping
+    var CATEGORY_MAP = {
+      Cotton_Bandage: "INFECTIOUS",
+      Glove:          "INFECTIOUS",
+      IV_Bottle:      "PHARMACEUTICAL",
+      Mask:           "INFECTIOUS",
+      Pill_Strip:     "PHARMACEUTICAL",
+      Syringe:        "SHARPS"
+    };
+
+    // -----------------------------------------------------------------------
+    // Health check on load — update badge
+    // -----------------------------------------------------------------------
+    fetch(API_HEALTH)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.model_loaded) {
+          setBadge("MODEL READY", "text-emerald-300", "border-emerald-400/40");
+        } else {
+          setBadge("MODEL LOADING", "text-amber-300", "border-amber-400/40");
+        }
+      })
+      .catch(function () {
+        setBadge("BACKEND OFFLINE", "text-red-400", "border-red-400/40");
+      });
+
+    function setBadge(text, textCls, borderCls) {
+      badge.textContent = text;
+      badge.className = "tiny text-xs border px-3 py-1.5 rounded-full " + textCls + " " + borderCls;
+    }
+
+    // -----------------------------------------------------------------------
+    // File selection
+    // -----------------------------------------------------------------------
+    uploadBtn.addEventListener("click", function () { fileInput.click(); });
+    dropZone.addEventListener("click", function () { fileInput.click(); });
+    dropZone.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }
+    });
+
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files[0]) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    // Drag-and-drop
+    dropZone.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      dropZone.classList.add("border-cyan-400/60", "bg-cyan-400/5");
+    });
+    dropZone.addEventListener("dragleave", function () {
+      dropZone.classList.remove("border-cyan-400/60", "bg-cyan-400/5");
+    });
+    dropZone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      dropZone.classList.remove("border-cyan-400/60", "bg-cyan-400/5");
+      var f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+
+    function handleFile(file) {
+      clearError();
+      selectedFile = file;
+
+      // Show preview
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        preview.src = ev.target.result;
+        preview.classList.remove("hidden");
+        uploadIcon.classList.add("hidden");
+        dropLabel.classList.add("hidden");
+      };
+      reader.readAsDataURL(file);
+
+      classifyBtn.disabled = false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Classify button
+    // -----------------------------------------------------------------------
+    classifyBtn.addEventListener("click", function () {
+      if (!selectedFile) return;
+      runPrediction(selectedFile);
+    });
+
+    // -----------------------------------------------------------------------
+    // API call
+    // -----------------------------------------------------------------------
+    function runPrediction(file) {
+      clearError();
+      setLoading(true);
+
+      var formData = new FormData();
+      formData.append("image", file);
+
+      fetch(API_PREDICT, {
+        method: "POST",
+        body: formData
+      })
+        .then(function (response) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, status: response.status, data: data };
+          });
+        })
+        .then(function (res) {
+          setLoading(false);
+          if (!res.ok) {
+            showError(res.data.error || "Prediction failed (HTTP " + res.status + ").");
+            return;
+          }
+          displayResult(res.data);
+        })
+        .catch(function (err) {
+          setLoading(false);
+          showError("Could not reach the backend. Make sure the Flask server is running.");
+          console.error("[BioMedAI] Predict error:", err);
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Display result
+    // -----------------------------------------------------------------------
+    function displayResult(data) {
+      var pred   = data.prediction  || "Unknown";
+      var conf   = data.confidence  != null ? data.confidence.toFixed(2) : "—";
+      var probs  = data.probabilities || {};
+      var cat    = CATEGORY_MAP[pred]    || pred.toUpperCase();
+      var dest   = DESTINATION_MAP[pred] || "GENERAL BIN";
+
+      // Populate existing detection result panel
+      resObject.textContent   = pred.replace(/_/g, " ").toUpperCase();
+      resCategory.textContent = cat;
+      resConf.textContent     = conf + "%";
+      resDest.textContent     = dest;
+      resStatus.textContent   = "✓ VERIFIED";
+      resStatus.className     = "mt-1 font-bold text-emerald-300";
+
+      // Update badge
+      setBadge("CLASSIFIED", "text-cyan-300", "border-cyan-400/40");
+
+      // Render probability bars
+      renderProbBars(probs, pred);
+
+      // Append to timeline
+      addTimelineEntry(pred, cat, conf);
+    }
+
+    function renderProbBars(probs, topPred) {
+      probsList.innerHTML = "";
+      // Sort descending
+      var entries = Object.entries(probs).sort(function (a, b) { return b[1] - a[1]; });
+      entries.forEach(function (entry) {
+        var cls  = entry[0];
+        var pct  = entry[1];
+        var isTop = cls === topPred;
+        var bar = document.createElement("div");
+        bar.className = "mb-1";
+        bar.innerHTML =
+          '<div class="flex justify-between mb-0.5">' +
+            '<span class="' + (isTop ? "text-cyan-200 font-bold" : "text-slate-400") + '">' +
+              cls.replace(/_/g, " ") +
+            '</span>' +
+            '<span class="' + (isTop ? "text-cyan-300 font-bold" : "text-slate-500") + '">' +
+              pct.toFixed(1) + '%' +
+            '</span>' +
+          '</div>' +
+          '<div class="h-1.5 rounded bg-slate-700">' +
+            '<div class="h-full rounded transition-all" style="width:' + Math.min(pct, 100) + '%;background:' +
+              (isTop ? "#32d6dc" : "rgba(100,130,170,0.4)") + '"></div>' +
+          '</div>';
+        probsList.appendChild(bar);
+      });
+    }
+
+    function addTimelineEntry(pred, cat, conf) {
+      if (!timeline) return;
+      var now = new Date();
+      var time = now.toTimeString().slice(0, 8);
+      var label = pred.replace(/_/g, " ");
+      var chip = document.createElement("span");
+      chip.className = "rounded-lg border border-cyan-400/25 bg-cyan-400/10 px-4 py-3 text-xs";
+      chip.textContent = time + " · " + label + " · " + cat;
+      // Prepend newest entry
+      timeline.insertBefore(chip, timeline.firstChild);
+    }
+
+    // -----------------------------------------------------------------------
+    // Loading state
+    // -----------------------------------------------------------------------
+    function setLoading(loading) {
+      classifyBtn.disabled = loading;
+      if (loading) {
+        classifyBtn.textContent = "ANALYSING…";
+        setBadge("PROCESSING", "text-amber-300", "border-amber-400/40");
+      } else {
+        classifyBtn.textContent = "CLASSIFY";
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Error display
+    // -----------------------------------------------------------------------
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.remove("hidden");
+      resStatus.textContent = "⚠ ERROR";
+      resStatus.className = "mt-1 font-bold text-red-400";
+      setBadge("ERROR", "text-red-400", "border-red-400/40");
+    }
+
+    function clearError() {
+      errorMsg.textContent = "";
+      errorMsg.classList.add("hidden");
+    }
+  })();
+
+</script>
+ </body>
+</html>
